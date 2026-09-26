@@ -233,8 +233,22 @@ async function sendPayload(payload){
         showResult(st,true,'Rekod telah dihantar ke database E-HADIR.');
         sessionCount++;
         updateSessionStats();
-        setStatus('✅ Rekod HADIR berjaya disimpan. Mengemas kini statistik…','ok');
-        setTimeout(loadDbStats,1200);
+
+        // Kemas kini statistik secara terus selepas rekod berjaya.
+        // Ini mengelakkan paparan kekal pada angka lama jika API statistik lambat.
+        const total=Number($('dbInfo').textContent.match(/Jumlah murid:\s*(\d+)/)?.[1]||0);
+        const hadirNow=Number($('dbHadir').textContent)||0;
+        const pendingNow=Number($('dbPending').textContent)||0;
+        const recordedMatch=$('dbInfo').textContent.match(/Direkod:\s*(\d+)/);
+        const recordedNow=recordedMatch?Number(recordedMatch[1]):0;
+        $('dbHadir').textContent=hadirNow+1;
+        $('dbPending').textContent=Math.max(0,pendingNow-1);
+        if(total>0) $('dbRate').textContent=((hadirNow+1)/total*100).toFixed(2)+'%';
+        $('dbInfo').textContent='Tarikh: '+new Date().toISOString().slice(0,10)+' • Jumlah murid: '+total+' • Direkod: '+(recordedNow+1);
+        setStatus('✅ Rekod HADIR berjaya disimpan. Statistik dikemas kini.','ok');
+
+        // Semak semula dengan database selepas beberapa saat.
+        setTimeout(loadDbStats,3000);
         $('next').style.display='inline-block';
       }else{
         showResult({},false);
