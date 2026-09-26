@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QR SCANNER • E-HADIR SMK APIN-APIN</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{--blue:#0757c9;--dark:#07152e;--ok:#078a52;--err:#c62828}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#06142d,#0b5dcc);min-height:100vh;color:#fff}
+.wrap{max-width:680px;margin:auto;padding:18px}.card{background:#fff;color:#172033;border-radius:24px;padding:22px;box-shadow:0 18px 50px #0005}.brand{font-weight:800;font-size:24px}.sub{opacity:.7;margin-top:5px}.field{width:100%;padding:14px;border:1px solid #ccd4e0;border-radius:12px;margin:14px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:800;font-size:16px;cursor:pointer;background:var(--blue);color:#fff;margin:4px}.btn.secondary{background:#e9eef8;color:#17335f}.status{padding:14px;border-radius:12px;background:#eef3fb;margin:15px 0;font-weight:700}.status.ok{background:#e6f7ef;color:#08623f}.status.err{background:#ffeded;color:#a31f1f}.reader{width:100%;max-width:520px;margin:14px auto;overflow:hidden;border-radius:18px;background:#000;min-height:80px}.hint{font-size:13px;opacity:.75;line-height:1.5}.result{font-size:18px;font-weight:800;margin-top:12px}.small{font-size:13px;opacity:.7;margin-top:8px}.hidden{display:none}label{font-weight:700;display:block;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="brand">📷 E-HADIR SMK APIN-APIN</div>
+  <div class="sub">QR Scanner Kehadiran</div>
+  <label>Nama guru / pentadbir</label>
+  <input id="teacher" class="field" placeholder="Contoh: ARUDIN DUALI" autocomplete="name">
+  <div id="status" class="status">Sedia untuk mengimbas QR.</div>
+  <div id="reader" class="reader"></div>
+  <div>
+    <button id="start" class="btn" onclick="startScan()">📷 Mula Scanner</button>
+    <button id="stop" class="btn secondary" onclick="stopScan()">⏹ Berhenti</button>
+  </div>
+  <div id="result" class="result"></div>
+  <div class="small">Selepas QR berjaya dibaca, rekod dihantar terus ke database E-HADIR.</div>
+  <div class="hint">Jika kamera tidak muncul, pastikan halaman scanner ini dibuka melalui HTTPS dan kebenaran kamera Chrome dibenarkan.</div>
+</div></div>
+<script>
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbwbbtHpWwo8H_pNasFCXmC-iBVFk2wZ2ZNyl45H7l0CCuAe7HLsthbpktIs9fV3i1JiA/exec';
+let scanner=null,running=false,busy=false;
+const $=id=>document.getElementById(id);
+function setStatus(msg,type=''){const e=$('status');e.textContent=msg;e.className='status '+type}
+function saveTeacher(){localStorage.setItem('ehadir_teacher',$('teacher').value.trim())}
+function loadTeacher(){ $('teacher').value=localStorage.getItem('ehadir_teacher')||'' }
+function stopScan(){if(scanner&&running){scanner.stop().catch(()=>{}).finally(()=>{running=false})}else running=false}
+async function startScan(){
+  if(running)return;
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_URL')){setStatus('Masukkan URL Web App E-HADIR dahulu dalam fail Scanner.','err');return}
+  saveTeacher();
+  setStatus('Meminta akses kamera…');
+  scanner=new Html5Qrcode('reader');
+  try{
+    const cams=await Html5Qrcode.getCameras();
+    if(!cams||!cams.length)throw new Error('Tiada kamera dikesan.');
+    const preferred=cams.find(c=>/back|rear|environment|belakang/i.test(c.label))||cams[cams.length-1];
+    await scanner.start(preferred.id,{fps:10,qrbox:(w,h)=>{const q=Math.floor(Math.min(w,h)*.68);return{width:q,height:q}}},onScan,()=>{});
+    running=true;setStatus('🟢 Kamera aktif — halakan QR ke kotak scanner.','ok');
+  }catch(err){running=false;setStatus('❌ Kamera tidak dapat dibuka: '+(err.message||err),'err')}
+}
+async function onScan(text){
+  if(busy)return;busy=true;stopScan();
+  const payload=String(text||'').trim();
+  setStatus('QR dikesan. Menghantar ke E-HADIR…');
+  $('result').textContent='';
+  const cb='ehadirCb_'+Date.now();
+  window[cb]=function(data){
+    try{
+      if(data&&data.ok){
+        const st=data.student||{};
+        $('result').textContent='✅ '+(st.name||'Murid')+' — '+(st.className||'');
+        setStatus(data.message||'Rekod HADIR berjaya disimpan.','ok');
+      }else{
+        $('result').textContent='';setStatus('❌ '+((data&&data.message)||'QR tidak sah.'),'err');
+      }
+    }finally{delete window[cb];busy=false}
+  };
+  const u=APPS_SCRIPT_URL+'?api=scan&callback='+encodeURIComponent(cb)+'&payload='+encodeURIComponent(payload)+'&teacher='+encodeURIComponent($('teacher').value.trim());
+  const sc=document.createElement('script');sc.src=u;sc.onerror=()=>{setStatus('❌ Gagal berhubung dengan E-HADIR. Semak URL Web App dan deployment.','err');delete window[cb];busy=false};document.body.appendChild(sc);
+  setTimeout(()=>{if(window[cb]){setStatus('⏱️ Server tidak memberi respons. Cuba scan semula.','err');delete window[cb];busy=false}},15000);
+}
+loadTeacher();
+$('teacher').addEventListener('change',saveTeacher);
+</script>
+</body></html>
