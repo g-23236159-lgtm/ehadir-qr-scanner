@@ -22,6 +22,8 @@
   <div>
     <button id="start" class="btn" onclick="startScan()">📷 Mula Scanner</button>
     <button id="stop" class="btn secondary" onclick="stopScan()">⏹ Berhenti</button>
+    <button class="btn secondary" onclick="document.getElementById('qrFile').click()">🖼️ Guna Kamera / Gambar</button>
+    <input id="qrFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="scanImage(this.files[0])">
   </div>
   <div id="result" class="result"></div>
   <div class="small">Selepas QR berjaya dibaca, rekod dihantar terus ke database E-HADIR.</div>
@@ -50,12 +52,18 @@ async function startScan(){
   }catch(err){running=false;setStatus('❌ Kamera tidak dapat dibuka: '+(err.message||err),'err')}
 }
 async function onScan(text){
-  if(busy)return;busy=true;stopScan();
-  const payload=String(text||'').trim();
+  if(busy)return;busy=true;await stopScan();
+  await sendPayload(String(text||'').trim());
+}
+async function sendPayload(payload){
+  if(!payload){busy=false;setStatus('❌ QR kosong atau tidak dapat dibaca.','err');return;}
+  saveTeacher();
   setStatus('QR dikesan. Menghantar ke E-HADIR…');
   $('result').textContent='';
   const cb='ehadirCb_'+Date.now();
+  let finished=false;
   window[cb]=function(data){
+    finished=true;
     try{
       if(data&&data.ok){
         const st=data.student||{};
@@ -67,8 +75,26 @@ async function onScan(text){
     }finally{delete window[cb];busy=false}
   };
   const u=APPS_SCRIPT_URL+'?api=scan&callback='+encodeURIComponent(cb)+'&payload='+encodeURIComponent(payload)+'&teacher='+encodeURIComponent($('teacher').value.trim());
-  const sc=document.createElement('script');sc.src=u;sc.onerror=()=>{setStatus('❌ Gagal berhubung dengan E-HADIR. Semak URL Web App dan deployment.','err');delete window[cb];busy=false};document.body.appendChild(sc);
+  const sc=document.createElement('script');
+  sc.src=u;
+  sc.onerror=()=>{if(finished)return;setStatus('❌ Gagal berhubung dengan E-HADIR. Semak URL Web App dan deployment.','err');delete window[cb];busy=false};
+  document.body.appendChild(sc);
   setTimeout(()=>{if(window[cb]){setStatus('⏱️ Server tidak memberi respons. Cuba scan semula.','err');delete window[cb];busy=false}},15000);
+}
+async function scanImage(file){
+  if(!file)return;
+  saveTeacher();
+  if(running)await stopScan();
+  busy=true;setStatus('🖼️ Membaca QR daripada gambar…');$('result').textContent='';
+  const temp=new Html5Qrcode('reader');
+  try{
+    const text=await temp.scanFile(file,true);
+    await temp.clear();
+    await sendPayload(String(text||'').trim());
+  }catch(e){
+    try{await temp.clear();}catch(_){}
+    busy=false;setStatus('❌ QR tidak ditemui dalam gambar. Cuba gambar yang lebih jelas.','err');
+  }
 }
 loadTeacher();
 $('teacher').addEventListener('change',saveTeacher);
