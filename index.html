@@ -38,6 +38,7 @@ label{font-weight:800;display:block;margin-top:18px}
 .stat{background:#f3f7ff;border:1px solid #dce7f8;border-radius:16px;padding:13px;text-align:center}
 .stat div{font-size:25px;font-weight:900;color:#0757c9}
 .stat span{display:block;font-size:10px;font-weight:800;color:#667085;margin-top:4px;letter-spacing:.3px}
+.dbinfo{font-size:12px;color:#667085;text-align:center;margin:8px 0 14px}
 .footer{text-align:center;font-size:11px;color:#aab4c4;margin-top:14px}
 </style>
 </head>
@@ -48,9 +49,12 @@ label{font-weight:800;display:block;margin-top:18px}
     <div class="sub">QR Scanner Kehadiran</div>
     <div class="live"><span class="dot"></span>SISTEM AKTIF • DATABASE ONLINE</div>
     <div class="stats">
-      <div class="stat"><div id="sessionCount">0</div><span>SCAN BERJAYA SESI INI</span></div>
-      <div class="stat"><div id="lastTime">—</div><span>SCAN TERAKHIR</span></div>
+      <div class="stat"><div id="dbHadir">—</div><span>HADIR HARI INI</span></div>
+      <div class="stat"><div id="dbPending">—</div><span>BELUM HADIR</span></div>
+      <div class="stat"><div id="dbRate">—</div><span>KADAR HADIR</span></div>
+      <div class="stat"><div id="sessionCount">0</div><span>SCAN SESI INI</span></div>
     </div>
+    <div id="dbInfo" class="dbinfo">Memuatkan statistik kehadiran hari ini…</div>
 
     <label>Nama guru / pentadbir</label>
     <input id="teacher" class="field" placeholder="Contoh: ARUDIN DUALI" autocomplete="name">
@@ -85,6 +89,30 @@ const $=id=>document.getElementById(id);
 function updateSessionStats(){
   $('sessionCount').textContent=sessionCount;
   $('lastTime').textContent=new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function updateDbStats(data){
+  if(!data||!data.ok)return;
+  $('dbHadir').textContent=data.hadir;
+  $('dbPending').textContent=data.belumHadir;
+  $('dbRate').textContent=Number(data.attendanceRate||0).toFixed(2)+'%';
+  $('dbInfo').textContent='Tarikh: '+data.date+' • Jumlah murid: '+data.total+' • Direkod: '+data.recorded;
+}
+
+function loadDbStats(){
+  const cb='ehadirStats_'+Date.now();
+  let finished=false;
+  window[cb]=function(data){
+    finished=true;
+    try{updateDbStats(data);}
+    finally{delete window[cb];}
+  };
+  const u=APPS_SCRIPT_URL+'?api=stats&callback='+encodeURIComponent(cb);
+  const sc=document.createElement('script');
+  sc.src=u;
+  sc.onerror=()=>{delete window[cb];$('dbInfo').textContent='Statistik database tidak dapat dimuatkan.';};
+  document.body.appendChild(sc);
+  setTimeout(()=>{if(window[cb]){delete window[cb];$('dbInfo').textContent='Statistik database belum memberi respons.';}},15000);
 }
 
 function setStatus(msg,type=''){
@@ -205,6 +233,7 @@ async function sendPayload(payload){
         showResult(st,true,'Rekod telah dihantar ke database E-HADIR.');
         sessionCount++;
         updateSessionStats();
+        loadDbStats();
         setStatus('✅ Rekod HADIR berjaya disimpan.','ok');
         $('next').style.display='inline-block';
       }else{
@@ -268,6 +297,7 @@ async function scanImage(file){
 
 loadTeacher();
 $('teacher').addEventListener('change',saveTeacher);
+loadDbStats();
 </script>
 </body>
 </html>
