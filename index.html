@@ -6,97 +6,252 @@
 <title>QR SCANNER • E-HADIR SMK APIN-APIN</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-:root{--blue:#0757c9;--dark:#07152e;--ok:#078a52;--err:#c62828}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#06142d,#0b5dcc);min-height:100vh;color:#fff}
-.wrap{max-width:680px;margin:auto;padding:18px}.card{background:#fff;color:#172033;border-radius:24px;padding:22px;box-shadow:0 18px 50px #0005}.brand{font-weight:800;font-size:24px}.sub{opacity:.7;margin-top:5px}.field{width:100%;padding:14px;border:1px solid #ccd4e0;border-radius:12px;margin:14px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:800;font-size:16px;cursor:pointer;background:var(--blue);color:#fff;margin:4px}.btn.secondary{background:#e9eef8;color:#17335f}.status{padding:14px;border-radius:12px;background:#eef3fb;margin:15px 0;font-weight:700}.status.ok{background:#e6f7ef;color:#08623f}.status.err{background:#ffeded;color:#a31f1f}.reader{width:100%;max-width:520px;margin:14px auto;overflow:hidden;border-radius:18px;background:#000;min-height:80px}.hint{font-size:13px;opacity:.75;line-height:1.5}.result{font-size:18px;font-weight:800;margin-top:12px}.small{font-size:13px;opacity:.7;margin-top:8px}.hidden{display:none}label{font-weight:700;display:block;margin-top:8px}
+:root{--blue:#0757c9;--dark:#07152e;--ok:#078a52;--err:#c62828;--gold:#f5b800}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at top,#176fe0 0,#0b4fae 38%,#06142d 100%);min-height:100vh;color:#fff}
+.wrap{max-width:680px;margin:auto;padding:18px}
+.card{background:#fff;color:#172033;border-radius:28px;padding:22px;box-shadow:0 20px 60px #0007}
+.brand{font-weight:900;font-size:25px;letter-spacing:-.4px}
+.sub{color:#5f6b7a;margin-top:5px;font-size:15px}
+.live{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 11px;border-radius:999px;background:#eaf7f0;color:#087b4b;font-weight:800;font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;background:#16a765;box-shadow:0 0 0 5px #16a76522}
+label{font-weight:800;display:block;margin-top:18px}
+.field{width:100%;padding:15px;border:1px solid #ccd4e0;border-radius:14px;margin:10px 0 14px;font-size:17px;outline:none}
+.field:focus{border-color:var(--blue);box-shadow:0 0 0 4px #0757c91a}
+.status{padding:14px 16px;border-radius:14px;background:#eef3fb;margin:12px 0;font-weight:800;line-height:1.35}
+.status.ok{background:#e6f7ef;color:#08623f}
+.status.err{background:#ffeded;color:#a31f1f}
+.reader{width:100%;max-width:520px;margin:14px auto;overflow:hidden;border-radius:20px;background:#000;min-height:90px;border:3px solid #e7edf6}
+.result{margin-top:14px;border-radius:18px;padding:16px;background:#f3f7ff;border:1px solid #dce7f8}
+.result.ok{background:#e8f8f0;border-color:#bcebd4}
+.result-title{font-size:21px;font-weight:900;color:#08623f}
+.result-class{font-size:16px;font-weight:800;margin-top:5px;color:#17335f}
+.result-note{font-size:13px;margin-top:8px;color:#5d6878}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:0;border-radius:14px;padding:14px 18px;font-weight:900;font-size:16px;cursor:pointer;background:var(--blue);color:#fff}
+.btn.secondary{background:#e9eef8;color:#17335f}
+.btn.next{background:#078a52;color:#fff;display:none}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.small{font-size:13px;color:#667085;margin-top:14px;line-height:1.5}
+.hint{font-size:12px;color:#7b8492;line-height:1.5;margin-top:8px}
+.footer{text-align:center;font-size:11px;color:#aab4c4;margin-top:14px}
 </style>
 </head>
 <body>
-<div class="wrap"><div class="card">
-  <div class="brand">📷 E-HADIR SMK APIN-APIN</div>
-  <div class="sub">QR Scanner Kehadiran</div>
-  <label>Nama guru / pentadbir</label>
-  <input id="teacher" class="field" placeholder="Contoh: ARUDIN DUALI" autocomplete="name">
-  <div id="status" class="status">Sedia untuk mengimbas QR.</div>
-  <div id="reader" class="reader"></div>
-  <div>
-    <button id="start" class="btn" onclick="startScan()">📷 Mula Scanner</button>
-    <button id="stop" class="btn secondary" onclick="stopScan()">⏹ Berhenti</button>
-    <button class="btn secondary" onclick="document.getElementById('qrFile').click()">🖼️ Guna Kamera / Gambar</button>
-    <input id="qrFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="scanImage(this.files[0])">
+<div class="wrap">
+  <div class="card">
+    <div class="brand">📷 E-HADIR SMK APIN-APIN</div>
+    <div class="sub">QR Scanner Kehadiran</div>
+    <div class="live"><span class="dot"></span>SISTEM AKTIF • DATABASE ONLINE</div>
+
+    <label>Nama guru / pentadbir</label>
+    <input id="teacher" class="field" placeholder="Contoh: ARUDIN DUALI" autocomplete="name">
+
+    <div id="status" class="status">Sedia untuk mengimbas QR.</div>
+
+    <div id="reader" class="reader"></div>
+
+    <div class="actions">
+      <button id="start" class="btn" onclick="startScan()">📷 Mula Scanner</button>
+      <button id="stop" class="btn secondary" onclick="stopScan()">⏹ Berhenti</button>
+      <button id="next" class="btn next" onclick="startNextScan()">🔄 Scan Murid Seterusnya</button>
+      <button class="btn secondary" onclick="document.getElementById('qrFile').click()">🖼️ Guna Kamera / Gambar</button>
+      <input id="qrFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="scanImage(this.files[0])">
+    </div>
+
+    <div id="result" class="result" style="display:none"></div>
+
+    <div class="small">Selepas QR berjaya dibaca, rekod dihantar terus ke database E-HADIR.</div>
+    <div class="hint">Jika kamera tidak muncul, pastikan halaman scanner dibuka melalui HTTPS dan kebenaran kamera Chrome dibenarkan.</div>
+    <div class="footer">SMK APIN-APIN • E-HADIR 2026</div>
   </div>
-  <div id="result" class="result"></div>
-  <div class="small">Selepas QR berjaya dibaca, rekod dihantar terus ke database E-HADIR.</div>
-  <div class="hint">Jika kamera tidak muncul, pastikan halaman scanner ini dibuka melalui HTTPS dan kebenaran kamera Chrome dibenarkan.</div>
-</div></div>
+</div>
+
 <script>
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyedgvkplh0U-T_MVk__vt_n3Sp000-avyK94fxgprH41G3V4o3VLs06tvPFMYD_3X9ig/exec';
 let scanner=null,running=false,busy=false;
+
 const $=id=>document.getElementById(id);
-function setStatus(msg,type=''){const e=$('status');e.textContent=msg;e.className='status '+type}
-function saveTeacher(){localStorage.setItem('ehadir_teacher',$('teacher').value.trim())}
-function loadTeacher(){ $('teacher').value=localStorage.getItem('ehadir_teacher')||'' }
-function stopScan(){if(scanner&&running){scanner.stop().catch(()=>{}).finally(()=>{running=false})}else running=false}
+
+function setStatus(msg,type=''){
+  const e=$('status');
+  e.textContent=msg;
+  e.className='status '+type;
+}
+
+function saveTeacher(){
+  localStorage.setItem('ehadir_teacher',$('teacher').value.trim());
+}
+
+function loadTeacher(){
+  $('teacher').value=localStorage.getItem('ehadir_teacher')||'';
+}
+
+function showResult(student,ok=true,note=''){
+  const e=$('result');
+  if(!ok){
+    e.style.display='none';
+    e.className='result';
+    e.innerHTML='';
+    return;
+  }
+  e.style.display='block';
+  e.className='result ok';
+  e.innerHTML='<div class="result-title">✅ '+escapeHtml(student.name||'Murid')+' — HADIR</div>'
+    +'<div class="result-class">'+escapeHtml(student.className||'Kelas tidak dinyatakan')+'</div>'
+    +(note?'<div class="result-note">'+escapeHtml(note)+'</div>':'');
+}
+
+function escapeHtml(v){
+  return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+function stopScan(){
+  if(scanner&&running){
+    scanner.stop().catch(()=>{}).finally(()=>{
+      running=false;
+      $('next').style.display='none';
+    });
+  }else{
+    running=false;
+    $('next').style.display='none';
+  }
+}
+
 async function startScan(){
-  if(running)return;
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_URL')){setStatus('Masukkan URL Web App E-HADIR dahulu dalam fail Scanner.','err');return}
+  if(running||busy)return;
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('PASTE_URL')){
+    setStatus('❌ URL Web App E-HADIR belum ditetapkan.','err');
+    return;
+  }
+
   saveTeacher();
+  showResult({},false);
+  $('start').disabled=true;
   setStatus('Meminta akses kamera…');
   scanner=new Html5Qrcode('reader');
+
   try{
     const cams=await Html5Qrcode.getCameras();
     if(!cams||!cams.length)throw new Error('Tiada kamera dikesan.');
     const preferred=cams.find(c=>/back|rear|environment|belakang/i.test(c.label))||cams[cams.length-1];
-    await scanner.start(preferred.id,{fps:10,qrbox:(w,h)=>{const q=Math.floor(Math.min(w,h)*.68);return{width:q,height:q}}},onScan,()=>{});
-    running=true;setStatus('🟢 Kamera aktif — halakan QR ke kotak scanner.','ok');
-  }catch(err){running=false;setStatus('❌ Kamera tidak dapat dibuka: '+(err.message||err),'err')}
+
+    await scanner.start(
+      preferred.id,
+      {fps:10,qrbox:(w,h)=>{
+        const q=Math.floor(Math.min(w,h)*.68);
+        return{width:q,height:q};
+      }},
+      onScan,
+      ()=>{}
+    );
+
+    running=true;
+    $('start').disabled=false;
+    setStatus('🟢 Kamera aktif — halakan QR ke kotak scanner.','ok');
+  }catch(err){
+    running=false;
+    $('start').disabled=false;
+    setStatus('❌ Kamera tidak dapat dibuka: '+(err.message||err),'err');
+  }
 }
+
+async function startNextScan(){
+  showResult({},false);
+  setStatus('Sedia untuk murid seterusnya.');
+  await startScan();
+}
+
 async function onScan(text){
-  if(busy)return;busy=true;await stopScan();
+  if(busy)return;
+  busy=true;
+  await stopScan();
   await sendPayload(String(text||'').trim());
 }
+
 async function sendPayload(payload){
-  if(!payload){busy=false;setStatus('❌ QR kosong atau tidak dapat dibaca.','err');return;}
+  if(!payload){
+    busy=false;
+    setStatus('❌ QR kosong atau tidak dapat dibaca.','err');
+    return;
+  }
+
   saveTeacher();
   setStatus('QR dikesan. Menghantar ke E-HADIR…');
-  $('result').textContent='';
+  showResult({},false);
+
   const cb='ehadirCb_'+Date.now();
   let finished=false;
+
   window[cb]=function(data){
     finished=true;
     try{
       if(data&&data.ok){
         const st=data.student||{};
-        $('result').textContent='✅ '+(st.name||'Murid')+' — '+(st.className||'');
-        setStatus(data.message||'Rekod HADIR berjaya disimpan.','ok');
+        showResult(st,true,'Rekod telah dihantar ke database E-HADIR.');
+        setStatus('✅ Rekod HADIR berjaya disimpan.','ok');
+        $('next').style.display='inline-block';
       }else{
-        $('result').textContent='';setStatus('❌ '+((data&&data.message)||'QR tidak sah.'),'err');
+        showResult({},false);
+        setStatus('❌ '+((data&&data.message)||'QR tidak sah.'),'err');
+        $('next').style.display='inline-block';
       }
-    }finally{delete window[cb];busy=false}
+    }finally{
+      delete window[cb];
+      busy=false;
+    }
   };
-  const u=APPS_SCRIPT_URL+'?api=scan&callback='+encodeURIComponent(cb)+'&payload='+encodeURIComponent(payload)+'&teacher='+encodeURIComponent($('teacher').value.trim());
+
+  const u=APPS_SCRIPT_URL
+    +'?api=scan'
+    +'&callback='+encodeURIComponent(cb)
+    +'&payload='+encodeURIComponent(payload)
+    +'&teacher='+encodeURIComponent($('teacher').value.trim());
+
   const sc=document.createElement('script');
   sc.src=u;
-  sc.onerror=()=>{if(finished)return;setStatus('❌ Gagal berhubung dengan E-HADIR. Semak URL Web App dan deployment.','err');delete window[cb];busy=false};
+  sc.onerror=()=>{
+    if(finished)return;
+    setStatus('❌ Gagal berhubung dengan E-HADIR. Semak URL Web App dan deployment.','err');
+    delete window[cb];
+    busy=false;
+  };
   document.body.appendChild(sc);
-  setTimeout(()=>{if(window[cb]){setStatus('⏱️ Server tidak memberi respons. Cuba scan semula.','err');delete window[cb];busy=false}},15000);
+
+  setTimeout(()=>{
+    if(window[cb]){
+      setStatus('⏱️ Server tidak memberi respons. Cuba scan semula.','err');
+      delete window[cb];
+      busy=false;
+      $('next').style.display='inline-block';
+    }
+  },15000);
 }
+
 async function scanImage(file){
   if(!file)return;
   saveTeacher();
   if(running)await stopScan();
-  busy=true;setStatus('🖼️ Membaca QR daripada gambar…');$('result').textContent='';
+
+  busy=true;
+  setStatus('🖼️ Membaca QR daripada gambar…');
+  showResult({},false);
+
   const temp=new Html5Qrcode('reader');
+
   try{
     const text=await temp.scanFile(file,true);
     await temp.clear();
     await sendPayload(String(text||'').trim());
   }catch(e){
     try{await temp.clear();}catch(_){}
-    busy=false;setStatus('❌ QR tidak ditemui dalam gambar. Cuba gambar yang lebih jelas.','err');
+    busy=false;
+    setStatus('❌ QR tidak ditemui dalam gambar. Cuba gambar yang lebih jelas.','err');
   }
 }
+
 loadTeacher();
 $('teacher').addEventListener('change',saveTeacher);
 </script>
-</body></html>
+</body>
+</html>
