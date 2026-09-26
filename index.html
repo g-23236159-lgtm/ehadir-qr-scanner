@@ -233,12 +233,13 @@ async function sendPayload(payload){
         showResult(st,true,'Rekod telah dihantar ke database E-HADIR.');
         sessionCount++;
         updateSessionStats();
-        loadDbStats();
-        setStatus('✅ Rekod HADIR berjaya disimpan.','ok');
+        setStatus('✅ Rekod HADIR berjaya disimpan. Mengemas kini statistik…','ok');
+        setTimeout(loadDbStats,1200);
         $('next').style.display='inline-block';
       }else{
         showResult({},false);
         setStatus('❌ '+((data&&data.message)||'QR tidak sah.'),'err');
+        loadDbStats();
         $('next').style.display='inline-block';
       }
     }finally{
