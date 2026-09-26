@@ -34,6 +34,10 @@ label{font-weight:800;display:block;margin-top:18px}
 .btn:disabled{opacity:.55;cursor:not-allowed}
 .small{font-size:13px;color:#667085;margin-top:14px;line-height:1.5}
 .hint{font-size:12px;color:#7b8492;line-height:1.5;margin-top:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{background:#f3f7ff;border:1px solid #dce7f8;border-radius:16px;padding:13px;text-align:center}
+.stat div{font-size:25px;font-weight:900;color:#0757c9}
+.stat span{display:block;font-size:10px;font-weight:800;color:#667085;margin-top:4px;letter-spacing:.3px}
 .footer{text-align:center;font-size:11px;color:#aab4c4;margin-top:14px}
 </style>
 </head>
@@ -43,6 +47,10 @@ label{font-weight:800;display:block;margin-top:18px}
     <div class="brand">📷 E-HADIR SMK APIN-APIN</div>
     <div class="sub">QR Scanner Kehadiran</div>
     <div class="live"><span class="dot"></span>SISTEM AKTIF • DATABASE ONLINE</div>
+    <div class="stats">
+      <div class="stat"><div id="sessionCount">0</div><span>SCAN BERJAYA SESI INI</span></div>
+      <div class="stat"><div id="lastTime">—</div><span>SCAN TERAKHIR</span></div>
+    </div>
 
     <label>Nama guru / pentadbir</label>
     <input id="teacher" class="field" placeholder="Contoh: ARUDIN DUALI" autocomplete="name">
@@ -70,8 +78,14 @@ label{font-weight:800;display:block;margin-top:18px}
 <script>
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyedgvkplh0U-T_MVk__vt_n3Sp000-avyK94fxgprH41G3V4o3VLs06tvPFMYD_3X9ig/exec';
 let scanner=null,running=false,busy=false;
+let sessionCount=0;
 
 const $=id=>document.getElementById(id);
+
+function updateSessionStats(){
+  $('sessionCount').textContent=sessionCount;
+  $('lastTime').textContent=new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
 
 function setStatus(msg,type=''){
   const e=$('status');
@@ -189,6 +203,8 @@ async function sendPayload(payload){
       if(data&&data.ok){
         const st=data.student||{};
         showResult(st,true,'Rekod telah dihantar ke database E-HADIR.');
+        sessionCount++;
+        updateSessionStats();
         setStatus('✅ Rekod HADIR berjaya disimpan.','ok');
         $('next').style.display='inline-block';
       }else{
