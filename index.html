@@ -4,293 +4,199 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>E-HADIR QR Scanner — SMK APIN-APIN</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
-header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;padding:18px}
-.wrap{max-width:1050px;margin:auto}
-.brand{display:flex;align-items:center;gap:12px}
-.brand h1{font-size:22px;margin:0 0 4px}
-.card{background:#fff;border-radius:16px;padding:18px;margin:16px 0;box-shadow:0 6px 24px #00000012}
-input,button{font:inherit}
-input{width:100%;padding:12px;border:1px solid #dbe2ea;border-radius:10px}
-button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer}
-.blue{background:#2563eb;color:#fff}
-.gray{background:#e5e7eb;color:#172033}
-.green{background:#16a34a;color:#fff}
-.red{background:#dc2626;color:#fff}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
+header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:white;padding:18px}.wrap{max-width:1050px;margin:auto}
+.brand{display:flex;align-items:center;gap:12px}.brand h1{margin:0 0 4px;font-size:22px}
+.card{background:#fff;border-radius:16px;padding:18px;margin:16px 0;box-shadow:0 6px 24px #0001}
+label{font-weight:700}input{width:100%;padding:12px;border:1px solid #dbe2ea;border-radius:10px;margin-top:6px}
+button{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;font:inherit}.blue{background:#2563eb;color:white}.gray{background:#e5e7eb}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.status{padding:13px;border-radius:12px;margin-top:12px;background:#eff6ff}.success{background:#ecfdf5}.error{background:#fef2f2}.warn{background:#fffbeb}
 #reader{width:100%;max-width:760px;margin:auto;background:#000;border-radius:14px;overflow:hidden;min-height:320px}
-.status{padding:14px;border-radius:12px;background:#eff6ff;margin-top:12px}
-.success{background:#ecfdf5}
-.error{background:#fef2f2}
-.warning{background:#fffbeb}
-.small{font-size:13px;color:#64748b}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-weight:700;font-size:12px}
-.active{background:#dcfce7;color:#166534}
+.small{font-size:13px;color:#64748b}.pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.on{background:#dcfce7;color:#166534}
+pre{white-space:pre-wrap;word-break:break-all;background:#f8fafc;border-radius:10px;padding:10px;font-size:12px}
 @media(max-width:650px){.brand h1{font-size:18px}#reader{min-height:280px}}
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <div class="brand">
-      <div style="font-size:38px">📷</div>
-      <div>
-        <h1>E-HADIR SMK APIN-APIN</h1>
-        <div>KENINGAU · QR Scanner Kehadiran Pelajar</div>
-      </div>
-    </div>
-  </div>
-</header>
+<header><div class="wrap"><div class="brand"><div style="font-size:38px">📷</div><div><h1>E-HADIR SMK APIN-APIN</h1><div>KENINGAU · QR Scanner Kehadiran Pelajar</div></div></div></div></header>
 
 <main class="wrap">
-  <div class="card">
-    <h2 style="margin-top:0">📷 Imbas QR Pelajar</h2>
-    <label><b>Nama guru / pentadbir</b></label>
-    <input id="teacher" placeholder="Masukkan nama guru / pentadbir">
+<div class="card">
+<h2 style="margin-top:0">📷 Imbas QR Pelajar</h2>
+<label>Nama guru / pentadbir</label>
+<input id="teacher" placeholder="Masukkan nama guru / pentadbir">
 
-    <div class="status success">
-      <span class="badge active">🟢 KAMERA SENTIASA AKTIF</span>
-      <div style="margin-top:7px">Selepas satu QR berjaya dibaca dan direkodkan, kamera <b>terus berjalan</b>. Tidak perlu tekan <b>Mula Scanner</b> semula.</div>
-    </div>
+<div class="status success">
+<span class="pill on">🟢 KAMERA SENTIASA AKTIF</span>
+<div style="margin-top:7px">Scan satu demi satu. Selepas berjaya direkodkan, kamera <b>tidak berhenti</b>.</div>
+</div>
 
-    <div id="reader"></div>
+<div id="reader"></div>
 
-    <div class="controls">
-      <button class="gray" id="stopBtn" onclick="stopCamera()">⏹ Berhenti</button>
-      <button class="blue" id="resumeBtn" onclick="startCamera()">▶ Sambung Kamera</button>
-      <button class="gray" onclick="switchCamera()">🔄 Tukar Kamera</button>
-    </div>
+<div class="controls">
+<button class="gray" onclick="stopCamera()">⏹ Berhenti</button>
+<button class="blue" onclick="startCamera()">▶ Sambung Kamera</button>
+<button class="gray" onclick="switchCamera()">🔄 Tukar Kamera</button>
+</div>
 
-    <div id="status" class="status">⏳ Kamera sedang disediakan...</div>
-  </div>
+<div id="status" class="status">⏳ Menyediakan kamera...</div>
+</div>
 
-  <div class="card">
-    <h3 style="margin-top:0">📋 Rekod Terakhir</h3>
-    <div id="last">Belum ada imbasan.</div>
-  </div>
+<div class="card">
+<h3 style="margin-top:0">📋 Rekod Terakhir</h3>
+<div id="last">Belum ada imbasan.</div>
+<div id="decoded" class="small" style="margin-top:10px"></div>
+</div>
 </main>
 
 <script>
-const APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbyedgvkplh0U-T_MVk__vt_n3Sp000-avyK94fxgprH41G3V4o3VLs06tvPFMYD_3X9ig/exec';
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyedgvkplh0U-T_MVk__vt_n3Sp000-avyK94fxgprH41G3V4o3VLs06tvPFMYD_3X9ig/exec';
+let scanner=null,running=false,cameras=[],cameraIndex=0,processing=false,lastText='',lastTime=0;
 
-let scanner = null;
-let running = false;
-let cameras = [];
-let cameraIndex = 0;
-let processing = false;
-let lastPayload = '';
-let lastScanAt = 0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-const $ = id => document.getElementById(id);
-
-function setStatus(msg, type='') {
-  const el = $('status');
-  el.className = 'status ' + type;
-  el.innerHTML = msg;
+function status(msg,type=''){
+  $('status').className='status '+type;
+  $('status').innerHTML=msg;
 }
 
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[m]));
-}
-
-function jsonp(params) {
-  return new Promise((resolve, reject) => {
-    const cb = 'ehadir_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
-    const script = document.createElement('script');
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('Pelayan E-HADIR tidak memberi respons.'));
-    }, 15000);
-
-    function cleanup() {
-      clearTimeout(timeout);
-      delete window[cb];
-      script.remove();
-    }
-
-    window[cb] = data => {
-      cleanup();
-      resolve(data);
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    const cb='ehadir_'+Date.now()+'_'+Math.floor(Math.random()*99999);
+    const script=document.createElement('script');
+    let done=false;
+    const finish=(fn,v)=>{
+      if(done)return;done=true;clearTimeout(timer);delete window[cb];script.remove();fn(v);
     };
-
-    const qs = new URLSearchParams({
-      ...params,
-      callback: cb
-    });
-
-    script.src = APPS_SCRIPT_URL + '?' + qs.toString();
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('Tidak dapat menghubungi database E-HADIR.'));
-    };
+    const timer=setTimeout(()=>finish(reject,new Error('Database tidak memberi respons.')),15000);
+    window[cb]=data=>finish(resolve,data);
+    const q=new URLSearchParams({...params,callback:cb});
+    script.src=APPS_SCRIPT_URL+'?'+q.toString();
+    script.onerror=()=>finish(reject,new Error('Tidak dapat menghubungi database E-HADIR.'));
     document.body.appendChild(script);
   });
 }
 
-async function recordQR(payload) {
-  const teacher = $('teacher').value.trim() || 'Guru/Pentadbir';
+async function sendScan(text){
+  const teacher=$('teacher').value.trim()||'Guru/Pentadbir';
 
-  try {
-    setStatus('⏳ QR dikesan. Menghantar rekod ke database...', 'warning');
-
-    const r = await jsonp({
-      api: 'scan',
-      payload: payload,
-      teacher: teacher
-    });
-
-    if (!r || r.ok === false) {
-      const msg = r?.message || 'QR tidak sah atau gagal direkodkan.';
-      setStatus('❌ ' + escapeHtml(msg), 'error');
-      return;
-    }
-
-    const student = r.student || {};
-    const name = student.name || r.name || payload;
-    const id = student.id || r.studentId || '';
-
-    $('last').innerHTML =
-      '<b>✅ ' + escapeHtml(name) + '</b>' +
-      (id ? '<br><small>ID: ' + escapeHtml(id) + '</small>' : '') +
-      '<br><small>' + escapeHtml(r.time || '') + '</small>';
-
-    setStatus(
-      '✅ <b>' + escapeHtml(name) +
-      '</b> berjaya direkodkan. Kamera terus aktif — arahkan QR seterusnya.',
-      'success'
-    );
-  } catch (e) {
-    setStatus('❌ ' + escapeHtml(e.message || String(e)), 'error');
-  }
-}
-
-async function onScanSuccess(decodedText) {
-  const payload = String(decodedText || '').trim();
-  if (!payload || processing) return;
-
-  // Elak satu QR yang sama dihantar berkali-kali dalam beberapa saat.
-  const now = Date.now();
-  if (payload === lastPayload && now - lastScanAt < 2500) return;
-
-  lastPayload = payload;
-  lastScanAt = now;
-  processing = true;
-
-  try {
-    await recordQR(payload);
-  } finally {
-    // Kamera TIDAK dihentikan.
-    // Selepas rekod selesai, terus bersedia untuk QR berikutnya.
-    setTimeout(() => { processing = false; }, 700);
-  }
-}
-
-function onScanError() {
-  // Sengaja kosong. QR yang belum lengkap bukan error pengguna.
-}
-
-async function startCamera() {
-  if (running) {
-    setStatus('🟢 Kamera sudah aktif. Arahkan QR pelajar ke kotak scanner.', 'success');
+  // QR E-HADIR yang dijana sistem mempunyai format tepat:
+  // EHADIR|ID_MURID|TOKEN
+  const parts=String(text).trim().split('|');
+  if(parts.length!==3 || parts[0]!=='EHADIR'){
+    status('❌ <b>QR bukan QR E-HADIR.</b><br><small>Format QR tidak dikenali.</small>','error');
     return;
   }
 
-  try {
-    setStatus('📷 Membuka kamera... Sila benarkan akses kamera jika diminta.');
+  status('⏳ QR sah dibaca. Menghantar rekod...','warn');
 
-    if (!navigator.mediaDevices?.getUserMedia) {
-      throw new Error('Browser tidak menyokong kamera. Gunakan Chrome terkini.');
-    }
+  const r=await jsonp({
+    api:'scan',
+    payload:String(text).trim(),
+    teacher:teacher
+  });
 
-    let stream = null;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-    } finally {
-      if (stream) stream.getTracks().forEach(t => t.stop());
-    }
+  if(!r || !r.ok){
+    status('⚠️ <b>'+esc(r?.message||'QR tidak dapat direkodkan.')+'</b><br><small>Kamera kekal aktif. Sila scan murid seterusnya.</small>','error');
+    return;
+  }
 
-    cameras = await Html5Qrcode.getCameras();
-    if (!cameras.length) throw new Error('Tiada kamera dikesan.');
+  const s=r.student||{};
+  $('last').innerHTML='<b>✅ '+esc(s.name||'Murid')+'</b><br>ID: '+esc(s.id||'')+
+    '<br><small>Status: HADIR · Masa: '+esc(r.time||'')+'</small>';
 
-    // Utamakan kamera belakang.
-    const back = cameras.findIndex(c =>
-      /back|rear|environment|belakang/i.test(c.label || '')
-    );
-    if (back >= 0) cameraIndex = back;
-    if (cameraIndex >= cameras.length) cameraIndex = 0;
+  status('🟢 <b>'+esc(s.name||'Murid')+' berjaya direkodkan.</b><br><small>Halakan QR murid berikutnya — kamera masih aktif.</small>','success');
+}
 
-    scanner = new Html5Qrcode('reader', false);
+async function onScanSuccess(decodedText){
+  const text=String(decodedText||'').trim();
+  if(!text||processing)return;
 
-    const config = {
-      fps: 12,
-      qrbox: (w,h) => {
-        const q = Math.max(180, Math.min(300, Math.floor(Math.min(w,h)*0.72)));
+  const now=Date.now();
+  if(text===lastText && now-lastTime<3000)return;
+  lastText=text;lastTime=now;processing=true;
+
+  $('decoded').innerHTML='Kandungan QR dikesan: <pre>'+esc(text)+'</pre>';
+
+  try{
+    await sendScan(text);
+  }catch(e){
+    status('❌ '+esc(e.message||String(e))+'<br><small>Kamera kekal aktif.</small>','error');
+  }finally{
+    // PENTING: scanner tidak dihentikan di sini.
+    setTimeout(()=>processing=false,700);
+  }
+}
+
+function onScanFailure(){}
+
+async function startCamera(){
+  if(running){
+    status('🟢 <b>Kamera sudah aktif.</b> Halakan QR seterusnya ke kotak scanner.','success');
+    return;
+  }
+
+  try{
+    status('📷 Membuka kamera...');
+
+    if(!navigator.mediaDevices?.getUserMedia)
+      throw new Error('Browser tidak menyokong akses kamera. Gunakan Chrome.');
+
+    let test=null;
+    try{test=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}
+    finally{if(test)test.getTracks().forEach(t=>t.stop());}
+
+    cameras=await Html5Qrcode.getCameras();
+    if(!cameras.length)throw new Error('Tiada kamera dikesan.');
+
+    const back=cameras.findIndex(c=>/back|rear|environment|belakang/i.test(c.label||''));
+    cameraIndex=back>=0?back:0;
+
+    scanner=new Html5Qrcode('reader',false);
+
+    const config={
+      fps:15,
+      qrbox:(w,h)=>{
+        const q=Math.max(200,Math.min(330,Math.floor(Math.min(w,h)*0.76)));
         return {width:q,height:q};
       },
-      aspectRatio: 1.0,
-      rememberLastUsedCamera: true,
-      showTorchButtonIfSupported: true
+      aspectRatio:1,
+      formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE],
+      rememberLastUsedCamera:true,
+      showTorchButtonIfSupported:true
     };
 
-    await scanner.start(
-      cameras[cameraIndex].id,
-      config,
-      onScanSuccess,
-      onScanError
-    );
+    await scanner.start(cameras[cameraIndex].id,config,onScanSuccess,onScanFailure);
+    running=true;
 
-    running = true;
-    setStatus(
-      '🟢 <b>Kamera aktif — halakan QR ke kotak scanner.</b><br>' +
-      '<small>Kamera kekal aktif selepas setiap scan.</small>',
-      'success'
-    );
+    status('🟢 <b>Kamera aktif — halakan QR pelajar.</b><br><small>Selepas scan berjaya, kamera kekal aktif.</small>','success');
 
-  } catch (e) {
-    running = false;
-    setStatus(
-      '❌ Kamera tidak dapat dibuka.<br><small>' +
-      escapeHtml(e.message || String(e)) +
-      '</small>',
-      'error'
-    );
+  }catch(e){
+    running=false;scanner=null;
+    status('❌ <b>Kamera gagal dibuka.</b><br><small>'+esc(e.message||String(e))+'</small>','error');
   }
 }
 
-async function stopCamera() {
-  if (!scanner) {
-    running = false;
-    setStatus('⏹ Kamera dihentikan.');
-    return;
+async function stopCamera(){
+  if(scanner){
+    try{await scanner.stop()}catch(e){}
+    try{scanner.clear()}catch(e){}
   }
-  try { await scanner.stop(); } catch(e) {}
-  try { scanner.clear(); } catch(e) {}
-  scanner = null;
-  running = false;
-  setStatus('⏹ Kamera dihentikan. Tekan "Sambung Kamera" untuk mengaktifkan semula.');
+  scanner=null;running=false;
+  status('⏹ Kamera dihentikan. Tekan Sambung Kamera untuk mengaktifkan semula.','warn');
 }
 
-async function switchCamera() {
-  if (!cameras.length) return startCamera();
-
-  const wasRunning = running;
-  if (wasRunning) await stopCamera();
-
-  cameraIndex = (cameraIndex + 1) % cameras.length;
-  setStatus('🔄 Menukar kamera...');
+async function switchCamera(){
+  if(!cameras.length){await startCamera();return;}
+  if(running)await stopCamera();
+  cameraIndex=(cameraIndex+1)%cameras.length;
   await startCamera();
 }
 
-window.addEventListener('load', () => {
-  // Terus hidupkan kamera apabila laman scanner dibuka.
-  startCamera();
-});
+window.addEventListener('load',startCamera);
 </script>
 </body>
 </html>
