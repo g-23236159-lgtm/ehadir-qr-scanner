@@ -54,6 +54,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#f8fafc;border-radius:1
 <script>
 const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyedgvkplh0U-T_MVk__vt_n3Sp000-avyK94fxgprH41G3V4o3VLs06tvPFMYD_3X9ig/exec';
 let scanner=null,running=false,cameras=[],cameraIndex=0,processing=false,lastText='',lastTime=0;
+let audioCtx=null;
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -61,6 +62,49 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 function status(msg,type=''){
   $('status').className='status '+type;
   $('status').innerHTML=msg;
+}
+
+/* BEEP kejayaan:
+   Hanya dipanggil selepas server E-HADIR memberi r.ok === true.
+   Tiada fail MP3 diperlukan.
+*/
+async function beepSuccess(){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+
+    if(!audioCtx || audioCtx.state==='closed'){
+      audioCtx=new AudioCtx();
+    }
+
+    if(audioCtx.state==='suspended'){
+      try{await audioCtx.resume();}catch(e){}
+    }
+
+    const now=audioCtx.currentTime;
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+
+    osc.type='sine';
+    osc.frequency.setValueAtTime(880,now);
+    osc.frequency.exponentialRampToValueAtTime(1320,now+0.12);
+
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.24,now+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now);
+    osc.stop(now+0.18);
+
+    setTimeout(()=>{
+      try{osc.disconnect();gain.disconnect();}catch(e){}
+    },350);
+  }catch(e){
+    // Jika browser menyekat audio, scanner tetap berjalan.
+  }
 }
 
 function jsonp(params){
@@ -104,11 +148,14 @@ async function sendScan(text){
     return;
   }
 
+  // BEEP hanya selepas server mengesahkan rekod berjaya.
+  await beepSuccess();
+
   const s=r.student||{};
   $('last').innerHTML='<b>✅ '+esc(s.name||'Murid')+'</b><br>ID: '+esc(s.id||'')+
     '<br><small>Status: HADIR · Masa: '+esc(r.time||'')+'</small>';
 
-  status('🟢 <b>'+esc(s.name||'Murid')+' berjaya direkodkan.</b><br><small>Halakan QR murid berikutnya — kamera masih aktif.</small>','success');
+  status('🟢 <b>'+esc(s.name||'Murid')+' berjaya direkodkan.</b><br><small>🔊 BEEP! · Halakan QR murid berikutnya — kamera masih aktif.</small>','success');
 }
 
 async function onScanSuccess(decodedText){
